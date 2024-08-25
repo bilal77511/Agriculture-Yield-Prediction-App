@@ -4,11 +4,11 @@ import streamlit as st
 from groq import Groq
 
 # Set your API key (replace 'your_groq_api_key_here' with the actual API key)
-os.environ["GROQ_API_KEY"] = "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"
+os.environ["IBM_API_KEY"] = st.secrets("IBM_API_KEY")
 
-# Initialize the Groq client
+# Initialize the client api
 client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
+    api_key=os.environ.get("IBM_API_KEY"),
 )
 
 # Function to handle predictions
