@@ -68,9 +68,7 @@ Follow these steps to set up the app on your local machine:
 
 ## 📷 Screenshot
 
-![Agricultural Yield Prediction App Screenshot](screenshot.png)
-
-*Add a screenshot of your app interface here.*
+![Agricultural Yield Prediction App](https://raw.githubusercontent.com/mj-awad17/Agriculture-Yield-Prediction-App/main/image.jpg)
 
 ## 🔑 API Key Setup
 
