@@ -49,7 +49,7 @@ def predict_yield(climate_zone=None, region=None, yield_units=None, farm_size=No
 
 # Streamlit Interface
 st.title("Agricultural Yield Prediction App")
-st.write("Predict agricultural yield based on various factors or a custom prompt using the Groq API.")
+st.write("Predict agricultural yield based on various factors.")
 
 # Sidebar for input method selection
 st.sidebar.title("Input Method")
