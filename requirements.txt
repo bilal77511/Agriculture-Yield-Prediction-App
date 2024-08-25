@@ -1,2 +1,10 @@
+"""
+!pip install --upgrade "ibm-watson>=8.0.0"
+!pip install ibm_watsonx_ai
+from ibm_watsonx_ai import Credentials
+from ibm_watsonx_ai.foundation_models import ModelInference
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes, DecodingMethods
 streamlit
 groq
+"""
