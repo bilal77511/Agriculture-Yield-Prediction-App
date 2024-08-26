@@ -95,4 +95,4 @@ For any questions or feedback, please feel free to reach us!
 - [Muhammad Bilal](https://www.linkedin.com/in/muhammad-bilal-a75782280/)
 - [Ghulam Abbas](https://www.linkedin.com/in/ghulam-abbas-310b7a302/)
 - [Alisha Ashraf](https://www.linkedin.com/in/alisha-ashraf-b73404301/)
-- [Hamid Raz]()
+- [Hamid Raza](https://www.linkedin.com/in/hamid-raza-302baa286/)
