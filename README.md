@@ -20,7 +20,7 @@ Welcome to the **Agricultural Yield Prediction App**! This application leverages
 - **Streamlit:** A framework for building interactive web apps with Python.
 - **IBM API:** Used for generating yield predictions using the Granite-3b-code-base model.
 - **Python:** Backend logic and API integration.
-- **Environment Variables:** For secure API key management.
+- **.env File:** For secure API key management.
 
 ## 📦 Installation
 
@@ -29,7 +29,7 @@ Follow these steps to set up the app on your local machine:
 1. **Clone the repository:**
 
     ```bash
-    git clone https://github.com/yourusername/agricultural-yield-prediction-app.git
+    https://github.com/bilal77511/Agriculture-Yield-Prediction-App.git
     ```
 
 2. **Navigate to the project directory:**
@@ -41,18 +41,15 @@ Follow these steps to set up the app on your local machine:
 3. **Install the required Python packages:**
 
     ```bash
-    pip install streamlit groq
+    pip install -r requirements.txt
     ```
 
 4. **Set up your API key:**
 
-    Replace `'your_ibm_api_key_here'` in the script with your actual Ibm API key:
+    .env.example file is provided to add secrets. Add your own IBM_API_KEY, IBM_URL and PROJECT_ID  
+   ***Dont forget to rename .env.example to .env after addding your own IBM_API_KEY, IBM_URL and PROJECT_ID***
 
-    ```python
-    os.environ["IBM_API_KEY"] = "your_ibm_api_key_here"
-    ```
-
-5. **Run the app:**
+6. **Run the app:**
 
     ```bash
     streamlit run app.py
@@ -76,6 +73,8 @@ To use this app, you need a Groq API key:
 
 1. Sign up on [IBM](https://cloud.ibm.com/) to get your API key.
 2. Replace `"your_ibm_api_key_here"` in the script with your actual API key.
+3. You can find the end point from the watson documntation or here is an example endpoint "https://us-south.ml.cloud.ibm.com"
+4. You can find project id in your project settings.
 
 ## 📝 License
 
