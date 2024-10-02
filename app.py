@@ -1,96 +1,103 @@
-# Import required libraries
 import os
 import streamlit as st
-from groq import Groq
+from ibm_watsonx_ai import Credentials
+from ibm_watsonx_ai.foundation_models import ModelInference
+from ibm_watsonx_ai.metanames import GenTextParamsMetaNames as GenParams
+from ibm_watsonx_ai.foundation_models.utils.enums import ModelTypes, DecodingMethods
+from dotenv import load_dotenv
 
-# Set your API key (replace 'your_groq_api_key_here' with the actual API key)
-os.environ["IBM_API_KEY"] = st.secrets("IBM_API_KEY")
+# Load environment variables from .env file
+load_dotenv()
 
-# Initialize the client api
-client = Groq(
-    api_key=os.environ.get("IBM_API_KEY"),
-)
+# Define a function to run Watson AI prediction
+def run_watson_granite(user_input):
+    # Initialize the model inference with environment variables
+    model_inference = ModelInference(
+        model_id="ibm/granite-13b-chat-v2",  # Replace with your desired model ID
+        params={
+            GenParams.DECODING_METHOD: DecodingMethods.GREEDY,
+            GenParams.TEMPERATURE: 0.5,
+            GenParams.MIN_NEW_TOKENS: 10,
+            GenParams.MAX_NEW_TOKENS: 1024
+        },
+        credentials=Credentials(
+            api_key=os.getenv("IBM_API_KEY"),
+            url=os.getenv("IBM_URL")
+        ),
+        project_id=os.getenv("PROJECT_ID")
+    )
 
-# Function to handle predictions
-def predict_yield(climate_zone=None, region=None, yield_units=None, farm_size=None, fertilizer_rate=None, 
-                  fertilizer_type=None, historical_weather=None, temperature=None, soil_moisture=None, 
-                  soil_type=None, weather_condition=None, crop_type=None, irrigation_method=None, 
-                  prediction_period=None, custom_prompt=None):
-    try:
-        if custom_prompt:
-            prompt = custom_prompt
-        else:
-            # Construct the prompt for the model using individual inputs
-            prompt = (
-                f"Predict the agricultural yield for a farm in the {climate_zone} climate zone, "
-                f"located in the {region} region. The farm size is {farm_size} acres, and the desired yield units are {yield_units}. "
-                f"The fertilizer application rate is {fertilizer_rate} using {fertilizer_type}. Historical weather data indicates {historical_weather}. "
-                f"The average temperature is {temperature} degrees, soil moisture levels are {soil_moisture}, and the soil type is {soil_type}. "
-                f"The current weather condition is {weather_condition}. The crop type is {crop_type}, and the irrigation method used is {irrigation_method}. "
-                f"The yield prediction period is {prediction_period}."
-            )
+    # Define the system's role with parameters
+    system_prompt = (
+        "\nYou have to predict the desired crop yield and best crop based on the mentioned parameters."
+    )
 
-        # Call the Groq API
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ],
-            model="llama3-8b-8192",
-        )
+    # Combine system prompt with user input
+    complete_prompt = user_input + " " + system_prompt
+    print(complete_prompt)
+    
+    # Generate response from the model
+    response = model_inference.generate(complete_prompt)
+    results = response.get('results', [])
 
-        # Return the response
-        return chat_completion.choices[0].message.content
+    del model_inference
 
-    except Exception as e:
-        return f"An error occurred during prediction: {e}"
+    # Extract the generated text from the response
+    generated_texts = [item.get('generated_text') for item in results]
 
-# Streamlit Interface
-st.title("Agricultural Yield Prediction App")
-st.write("Predict agricultural yield based on various factors.")
+    return generated_texts
 
-# Sidebar for input method selection
-st.sidebar.title("Input Method")
-input_method = st.sidebar.radio("Choose input method:", ("Use Custom Prompt", "Use Parameters"))
+# Streamlit app
+st.title("Agricultural Yield Prediction Tool")
 
-if input_method == "Use Parameters":
-    # Sidebar inputs for parameters
-    st.sidebar.title("Input Parameters")
-    climate_zone = st.sidebar.text_input("Climate Zone")
-    region = st.sidebar.text_input("Region")
-    yield_units = st.sidebar.text_input("Desired Yield Units (e.g., tons per acre, bushels per acre)")
-    farm_size = st.sidebar.text_input("Farm Size (acres or hectares)")
-    fertilizer_rate = st.sidebar.text_input("Fertilizer Application Rate")
-    fertilizer_type = st.sidebar.text_input("Fertilizer Type")
-    historical_weather = st.sidebar.text_input("Historical Weather Data")
-    temperature = st.sidebar.text_input("Temperature (degrees)")
-    soil_moisture = st.sidebar.text_input("Soil Moisture Levels")
-    soil_type = st.sidebar.text_input("Soil Type")
-    weather_condition = st.sidebar.text_input("Weather Condition")
-    crop_type = st.sidebar.text_input("Crop Type")
-    irrigation_method = st.sidebar.text_input("Irrigation Method")
-    prediction_period = st.sidebar.text_input("Yield Prediction Period (e.g., weekly, monthly, seasonal)")
-    custom_prompt = None
+st.write("""
+*Agricultural Yield Prediction Tool* helps you estimate crop yields based on a variety of factors.
+By entering your details, we generate predictions for your agricultural yield based on the data provided.
+""")
 
-else:
-    # Sidebar input for custom prompt
-    st.sidebar.title("Custom Prompt")
-    custom_prompt = st.sidebar.text_area("Enter your custom prompt here", value="Enter your prompt...")
-    climate_zone = region = yield_units = farm_size = fertilizer_rate = fertilizer_type = historical_weather = None
-    temperature = soil_moisture = soil_type = weather_condition = crop_type = irrigation_method = prediction_period = None
+# Sidebar inputs for agricultural details
+st.sidebar.header("Enter Agricultural Details")
 
-# Main page layout for buttons and output
-col1, col2 = st.columns([1, 2])
+location = st.sidebar.text_input("Location (GPS coordinates, city, state, or zip code)")
+crop_type = st.sidebar.text_input("Crop Type (e.g., corn, wheat, soybeans, etc.)")
+farm_size = st.sidebar.number_input("Farm Size (acres or hectares)", min_value=0.1, step=0.1)
+soil_type = st.sidebar.text_input("Soil Type (e.g., clay, silt, loam, etc.)")
+historical_weather_data = st.sidebar.text_area("Historical Weather Data (temperature, precipitation, sunshine hours)")
+climate_zone = st.sidebar.text_input("Climate Zone or Region")
+weather_forecast_integration = st.sidebar.text_input("Weather Forecast Integration (optional)")
+soil_moisture_levels = st.sidebar.number_input("Soil Moisture Levels (%)", min_value=0.0, max_value=100.0, step=0.1)
+fertilizer_application = st.sidebar.text_input("Fertilizer Application Rates and Types")
+irrigation_system = st.sidebar.text_input("Irrigation System Information (e.g., drip, sprinkler, flood)")
+crop_variety = st.sidebar.text_input("Crop Variety and Planting Date")
+pest_management = st.sidebar.text_input("Pest and Disease Management Practices")
+yield_prediction_period = st.sidebar.selectbox("Yield Prediction Period", ["weekly", "monthly", "seasonal"])
+desired_yield_units = st.sidebar.selectbox("Desired Yield Units", ["tons per acre", "bushels per acre"])
 
-# Clear button functionality
-if col2.button("Clear"):
-    st.rerun()
+# Prediction button
+if st.button("Predict Yield"):
+    # Prepare user input for the LLM with more prompt engineering
+    user_input = f"""
+    Location: {location}
+    Desired Crop: {crop_type}
+    Farm Size: {farm_size} {desired_yield_units.split()[1]}
+    Soil Type: {soil_type}
+    Historical Weather Data: {historical_weather_data}
+    Climate Zone: {climate_zone}
+    Weather Forecast Integration: {weather_forecast_integration}
+    Soil Moisture Levels: {soil_moisture_levels}%
+    Fertilizer Application: {fertilizer_application}
+    Irrigation System: {irrigation_system}
+    Crop Variety: {crop_variety}
+    Pest Management: {pest_management}
+    Yield Prediction Period: {yield_prediction_period}
+    """
 
-# Predict button and display result
-if col1.button("Predict Yield"):
-    prediction = predict_yield(climate_zone, region, yield_units, farm_size, fertilizer_rate, fertilizer_type,
-                               historical_weather, temperature, soil_moisture, soil_type, weather_condition,
-                               crop_type, irrigation_method, prediction_period, custom_prompt)
-    st.write("Predicted Yield:", prediction)
+    # Call the LLM function
+    response = run_watson_granite(user_input)
+
+    # Display the predicted yield
+    generated_text = response[0]  # Assuming the first item is the response
+    st.write(f"**Yield Prediction:** {generated_text}")
+
+# Footer
+st.markdown("Developed by Muhammad Bilal, Ghulam Abbas, Muhammad Jawad, Hamid Raza, and Alisha Ashraf")
